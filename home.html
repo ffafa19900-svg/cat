@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Cat Cursor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Custom Cursor */
+        .custom-cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            transition: transform 0.1s ease;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-dot {
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10001;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Cat Container */
+        .cat-container {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease-out;
+        }
+
+        /* Cat Body */
+        .cat {
+            width: 80px;
+            height: 60px;
+            position: relative;
+            animation: breathe 2s ease-in-out infinite;
+        }
+
+        .cat-body {
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            border-radius: 50% 50% 40% 40%;
+            position: absolute;
+            top: 15px;
+            left: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Cat Head */
+        .cat-head {
+            width: 50px;
+            height: 45px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Ears */
+        .ear {
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 20px solid #ff6b6b;
+            position: absolute;
+            top: -10px;
+        }
+
+        .ear-left {
+            left: 5px;
+            transform: rotate(-15deg);
+        }
+
+        .ear-right {
+            right: 5px;
+            transform: rotate(15deg);
+        }
+
+        .ear-inner {
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 10px solid #ff9999;
+            position: absolute;
+            top: 5px;
+            left: -6px;
+        }
+
+        /* Eyes */
+        .eye {
+            width: 12px;
+            height: 12px;
+            background: #333;
+            border-radius: 50%;
+            position: absolute;
+            top: 15px;
+            animation: blink 4s infinite;
+        }
+
+        .eye-left {
+            left: 12px;
+        }
+
+        .eye-right {
+            right: 12px;
+        }
+
+        .eye::before {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+        }
+
+        /* Nose */
+        .nose {
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid #333;
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Mouth */
+        .mouth {
+            width: 15px;
+            height: 8px;
+            border: 2px solid #333;
+            border-top: none;
+            border-radius: 0 0 50% 50%;
+            position: absolute;
+            top: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Whiskers */
+        .whisker {
+            width: 20px;
+            height: 1px;
+            background: #333;
+            position: absolute;
+            top: 23px;
+        }
+
+        .whisker-left-1 {
+            left: -15px;
+            transform: rotate(-10deg);
+        }
+
+        .whisker-left-2 {
+            left: -15px;
+            top: 27px;
+            transform: rotate(-20deg);
+        }
+
+        .whisker-right-1 {
+            right: -15px;
+            transform: rotate(10deg);
+        }
+
+        .whisker-right-2 {
+            right: -15px;
+            top: 27px;
+            transform: rotate(20deg);
+        }
+
+        /* Tail */
+        .tail {
+            width: 40px;
+            height: 8px;
+            background: linear-gradient(90deg, #ff6b6b, #ff8e53);
+            border-radius: 50%;
+            position: absolute;
+            bottom: 15px;
+            right: -25px;
+            transform-origin: left center;
+            animation: wag 0.5s ease-in-out infinite alternate;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Paws */
+        .paw {
+            width: 15px;
+            height: 15px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            border-radius: 50%;
+            position: absolute;
+            bottom: -5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .paw-left {
+            left: 20px;
+        }
+
+        .paw-right {
+            right: 20px;
+        }
+
+        /* Paw Prints Trail */
+        .paw-print {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0.6;
+            animation: fadeOut 2s forwards;
+            z-index: 1;
+        }
+
+        .paw-print svg {
+            width: 20px;
+            height: 20px;
+            fill: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Animations */
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes blink {
+            0%, 90%, 100% { transform: scaleY(1); }
+            95% { transform: scaleY(0.1); }
+        }
+
+        @keyframes wag {
+            0% { transform: rotate(-20deg); }
+            100% { transform: rotate(20deg); }
+        }
+
+        @keyframes fadeOut {
+            0% { 
+                opacity: 0.6;
+                transform: scale(1) rotate(0deg);
+            }
+            100% { 
+                opacity: 0;
+                transform: scale(0.5) rotate(360deg);
+            }
+        }
+
+        /* Content */
+        .content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            pointer-events: auto;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            max-width: 600px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Heart animation when clicking */
+        .heart {
+            position: fixed;
+            pointer-events: none;
+            animation: heartFloat 1s ease-out forwards;
+            z-index: 10000;
+        }
+
+        .heart::before {
+            content: '❤️';
+            font-size: 20px;
+        }
+
+        @keyframes heartFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-50px) scale(1.5);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .cat {
+                transform: scale(0.8);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+    <div class="cursor-dot"></div>
+
+    <!-- Animated Cat -->
+    <div class="cat-container" id="cat">
+        <div class="cat">
+            <div class="cat-body"></div>
+            <div class="cat-head">
+                <div class="ear ear-left">
+                    <div class="ear-inner"></div>
+                </div>
+                <div class="ear ear-right">
+                    <div class="ear-inner"></div>
+                </div>
+                <div class="eye eye-left"></div>
+                <div class="eye eye-right"></div>
+                <div class="nose"></div>
+                <div class="mouth"></div>
+                <div class="whisker whisker-left-1"></div>
+                <div class="whisker whisker-left-2"></div>
+                <div class="whisker whisker-right-1"></div>
+                <div class="whisker whisker-right-2"></div>
+            </div>
+            <div class="tail"></div>
+            <div class="paw paw-left"></div>
+            <div class="paw paw-right"></div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <h1>🐱 Follow the Cat!</h1>
+        <p>Move your mouse around and watch this adorable cat follow you everywhere! Click to see some magic happen.</p>
+        
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">👀</div>
+                <h3>Blinking Eyes</h3>
+                <p>The cat blinks naturally as it follows you</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🐾</div>
+                <h3>Paw Prints</h3>
+                <p>Leaves tiny paw prints as it moves</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">❤️</div>
+                <h3>Click Magic</h3>
+                <p>Click anywhere to spread love hearts</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>Smooth Animation</h3>
+                <p>Fluid movements with breathing effect</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get elements
+        const cat = document.getElementById('cat');
+        const cursor = document.querySelector('.custom-cursor');
+        const cursorDot = document.querySelector('.cursor-dot');
+        let mouseX = 0, mouseY = 0;
+        let catX = window.innerWidth / 2, catY = window.innerHeight / 2;
+        let isMoving = false;
+        let pawPrintTimer = null;
+
+        // Mouse movement handler
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // Update custom cursor
+            cursor.style.left = mouseX - 10 + 'px';
+            cursor.style.top = mouseY - 10 + 'px';
+            cursorDot.style.left = mouseX + 'px';
+            cursorDot.style.top = mouseY + 'px';
+            
+            // Set moving state
+            isMoving = true;
+            
+            // Clear existing timer
+            clearTimeout(pawPrintTimer);
+            
+            // Set new timer to stop creating paw prints
+            pawPrintTimer = setTimeout(() => {
+                isMoving = false;
+            }, 100);
+        });
+
+        // Smooth cat following animation
+        function animateCat() {
+            // Calculate distance between cat and mouse
+            const dx = mouseX - catX;
+            const dy = mouseY - catY;
+            
+            // Smooth following with easing
+            const speed = 0.08;
+            catX += dx * speed;
+            catY += dy * speed;
+            
+            // Update cat position
+            cat.style.left = catX + 'px';
+            cat.style.top = catY + 'px';
+            
+            // Rotate cat based on movement direction
+            const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+            cat.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+            
+            // Create paw prints while moving
+            if (isMoving && Math.random() > 0.7) {
+                createPawPrint(catX, catY);
+            }
+            
+            requestAnimationFrame(animateCat);
+        }
+
+        // Create paw print
+        function createPawPrint(x, y) {
+            const pawPrint = document.createElement('div');
+            pawPrint.className = 'paw-print';
+            pawPrint.innerHTML = `
+                <svg viewBox="0 0 24 24">
+                    <path d="M12,2C12.53,2 13.04,2.21 13.43,2.59C13.81,2.97 14.03,3.5 14.03,4.05C14.03,4.6 13.81,5.13 13.43,5.5C13.04,5.88 12.53,6.1 12,6.1C11.47,6.1 10.96,5.88 10.57,5.5C10.19,5.13 9.97,4.6 9.97,4.05C9.97,3.5 10.19,2.97 10.57,2.59C10.96,2.21 11.47,2 12,2M7,7C7.53,7 8.04,7.21 8.43,7.59C8.81,7.97 9.03,8.5 9.03,9.05C9.03,9.6 8.81,10.13 8.43,10.5C8.04,10.88 7.53,11.1 7,11.1C6.47,11.1 5.96,10.88 5.57,10.5C5.19,10.13 4.97,9.6 4.97,9.05C4.97,8.5 5.19,7.97 5.57,7.59C5.96,7.21 6.47,7 7,7M17,7C17.53,7 18.04,7.21 18.43,7.59C18.81,7.97 19.03,8.5 19.03,9.05C19.03,9.6 18.81,10.13 18.43,10.5C18.04,10.88 17.53,11.1 17,11.1C16.47,11.1 15.96,10.88 15.57,10.5C15.19,10.13 14.97,9.6 14.97,9.05C14.97,8.5 15.19,7.97 15.57,7.59C15.96,7.21 16.47,7 17,7M12,22C10.34,22 8.79,21.47 7.5,20.54C6.21,19.61 5.23,18.31 4.7,16.81C4.17,15.31 4.11,13.68 4.54,12.15C4.97,10.61 5.86,9.25 7.09,8.25L8.5,9.67C7.65,10.35 7,11.26 6.65,12.28C6.29,13.31 6.25,14.41 6.54,15.46C6.83,16.5 7.43,17.44 8.27,18.15C9.11,18.86 10.14,19.31 11.23,19.44C12.32,19.57 13.43,19.37 14.4,18.87C15.37,18.37 16.17,17.59 16.69,16.63C17.21,15.67 17.43,14.58 17.32,13.5C17.21,12.41 16.78,11.38 16.09,10.53L17.5,9.11C18.5,10.03 19.21,11.22 19.54,12.53C19.87,13.84 19.8,15.22 19.34,16.5C18.88,17.78 18.05,18.9 16.96,19.72C15.87,20.54 14.57,21 13.23,21.04L12,22Z"/>
+                </svg>
+            `;
+            pawPrint.style.left = x + (Math.random() - 0.5) * 20 + 'px';
+            pawPrint.style.top = y + (Math.random() - 0.5) * 20 + 'px';
+            document.body.appendChild(pawPrint);
+            
+            // Remove paw print after animation
+            setTimeout(() => {
+                pawPrint.remove();
+            }, 2000);
+        }
+
+        // Click handler for hearts
+        document.addEventListener('click', (e) => {
+            // Don't create hearts when clicking on feature cards
+            if (e.target.closest('.feature-card')) return;
+            
+            createHeart(e.clientX, e.clientY);
+            
+            // Make cat jump
+            cat.style.animation = 'none';
+            setTimeout(() => {
+                cat.style.animation = 'breathe 2s ease-in-out infinite, jump 0.5s ease-out';
+            }, 10);
+        });
+
+        // Create heart animation
+        function createHeart(x, y) {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.style.left = x - 10 + 'px';
+            heart.style.top = y - 10 + 'px';
+            document.body.appendChild(heart);
+            
+            setTimeout(() => {
+                heart.remove();
+            }, 1000);
+        }
+
+        // Add jump animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes jump {
+                0%, 100% { transform: translate(-50%, -50%) scale(1); }
+                50% { transform: translate(-50%, -60%) scale(1.2); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Start animation
+        animateCat();
+
+        // Initial cat position
+        catX = window.innerWidth / 2;
+        catY = window.innerHeight / 2;
+
+        // Add some initial paw prints
+        setTimeout(() => {
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    createPawPrint(
+                        Math.random() * window.innerWidth,
+                        Math.random() * window.innerHeight
+                    );
+                }, i * 200);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
